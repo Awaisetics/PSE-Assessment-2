@@ -6,13 +6,28 @@ if (!process.env.MONGODB_URI) {
 }
 
 const uri = process.env.MONGODB_URI
+
 let client
 let clientPromise
 
-if (!global._mongoClientPromise) {
-    client = new MongoClient(uri)
-    global._mongoClientPromise = client.connect()
+async function createClient() {
+    console.log("🔃 MongoDB: Attempting to connect...")
+
+    try {
+        client = new MongoClient(uri)
+        await client.connect()
+        console.log("✅ MongoDB: Successfully connected!")
+        return client
+    } catch (error) {
+        console.error("❌ MongoDB connection error:", error)
+        throw error
+    }
 }
+
+if (!global._mongoClientPromise) {
+    global._mongoClientPromise = createClient()
+}
+
 clientPromise = global._mongoClientPromise
 
 export default clientPromise
